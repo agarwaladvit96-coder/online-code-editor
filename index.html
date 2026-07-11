@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WASM IDE - Online Multi-Language Sandbox</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Monaco Editor Loader -->
+  <script src="https://cdn.jsdelivr.net/npm/@monaco-editor/loader@1.4.0/lib/umd/monaco-loader.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar: Language Selection -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fa-solid fa-microchip logo-icon"></i>
+        <div class="brand">
+          <h1>WASM Sandbox</h1>
+          <span>100% In-Browser IDE</span>
+        </div>
+      </div>
+      
+      <div class="language-list">
+        <!-- Python -->
+        <div class="lang-card active" data-lang="python">
+          <div class="lang-icon py-icon"><i class="fa-brands fa-python"></i></div>
+          <div class="lang-info">
+            <h3>Python</h3>
+            <p>Pyodide WASM Runtime</p>
+          </div>
+        </div>
+        <!-- JavaScript -->
+        <div class="lang-card" data-lang="javascript">
+          <div class="lang-icon js-icon"><i class="fa-brands fa-square-js"></i></div>
+          <div class="lang-info">
+            <h3>JavaScript</h3>
+            <p>Sandboxed Web Worker</p>
+          </div>
+        </div>
+        <!-- Ruby -->
+        <div class="lang-card" data-lang="ruby">
+          <div class="lang-icon rb-icon"><i class="fa-solid fa-gem"></i></div>
+          <div class="lang-info">
+            <h3>Ruby</h3>
+            <p>ruby.wasm v2.6.2</p>
+          </div>
+        </div>
+        <!-- Lua -->
+        <div class="lang-card" data-lang="lua">
+          <div class="lang-icon lua-icon"><i class="fa-solid fa-moon"></i></div>
+          <div class="lang-info">
+            <h3>Lua</h3>
+            <p>Wasmoon Lua 5.4 VM</p>
+          </div>
+        </div>
+        <!-- C -->
+        <div class="lang-card" data-lang="c">
+          <div class="lang-icon c-icon"><span style="font-weight: 800; font-family: monospace;">C</span></div>
+          <div class="lang-info">
+            <h3>C</h3>
+            <p>picocjs WASM C Interpreter</p>
+          </div>
+        </div>
+        <!-- C++ -->
+        <div class="lang-card" data-lang="cpp">
+          <div class="lang-icon cpp-icon"><span style="font-weight: 800; font-family: monospace;">C++</span></div>
+          <div class="lang-info">
+            <h3>C++</h3>
+            <p>picocjs C++ Interpreter</p>
+          </div>
+        </div>
+        <!-- PHP -->
+        <div class="lang-card" data-lang="php">
+          <div class="lang-icon php-icon"><i class="fa-brands fa-php"></i></div>
+          <div class="lang-info">
+            <h3>PHP</h3>
+            <p>php-wasm Runtime</p>
+          </div>
+        </div>
+        <!-- Java -->
+        <div class="lang-card" data-lang="java">
+          <div class="lang-icon java-icon"><i class="fa-brands fa-java"></i></div>
+          <div class="lang-info">
+            <h3>Java</h3>
+            <p>TeaVM WASM Compiler</p>
+          </div>
+        </div>
+        <!-- HTML -->
+        <div class="lang-card" data-lang="html">
+          <div class="lang-icon html-icon"><i class="fa-brands fa-html5"></i></div>
+          <div class="lang-info">
+            <h3>HTML5</h3>
+            <p>Direct Browser Preview</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="sidebar-footer">
+        <p>Built with <i class="fa-solid fa-heart accent-love"></i> by Advit</p>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- Toolbar -->
+      <header class="toolbar">
+        <div class="toolbar-left">
+          <div class="status-badge" id="runtime-status">
+            <span class="status-indicator idle"></span>
+            <span class="status-text">Monaco Editor Loading...</span>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button id="btn-run" class="btn btn-primary" title="Execute Code (Ctrl+Enter)" disabled>
+            <i class="fa-solid fa-play"></i> Run Code
+          </button>
+          <button id="btn-stop" class="btn btn-danger" title="Terminate Execution" disabled>
+            <i class="fa-solid fa-circle-stop"></i> Stop
+          </button>
+          <button id="btn-clear" class="btn btn-secondary" title="Clear Console Output">
+            <i class="fa-solid fa-eraser"></i> Clear
+          </button>
+          <button id="btn-reset" class="btn btn-secondary" title="Reset Code to Default Template">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </button>
+          <div class="divider"></div>
+          <button id="btn-share" class="btn btn-secondary" title="Generate Shareable Link">
+            <i class="fa-solid fa-share-nodes"></i> Share
+          </button>
+          <button id="btn-download" class="btn btn-secondary" title="Download Code File">
+            <i class="fa-solid fa-download"></i> Download
+          </button>
+        </div>
+      </header>
+
+      <!-- Editor Panel & Output Grid -->
+      <div class="workspace-grid">
+        <!-- Monaco Editor Panel -->
+        <div class="panel editor-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-file-code icon-lang-active"></i>
+              <span id="current-filename">main.py</span>
+            </div>
+            <div class="panel-actions">
+              <label for="font-size-select"><i class="fa-solid fa-font"></i></label>
+              <select id="font-size-select">
+                <option value="12">12px</option>
+                <option value="14" selected>14px</option>
+                <option value="16">16px</option>
+                <option value="18">18px</option>
+              </select>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="editor-container"></div>
+          </div>
+        </div>
+
+        <!-- Terminal & SQL Panel -->
+        <div class="panel output-panel">
+          <div class="panel-header tabs-header">
+            <div class="tabs">
+              <button class="tab-btn active" data-tab="terminal">
+                <i class="fa-solid fa-terminal"></i> Console Output
+              </button>
+              <button class="tab-btn" id="tab-database-btn" data-tab="database" style="display: none;">
+                <i class="fa-solid fa-table"></i> Database Explorer
+              </button>
+              <button class="tab-btn" id="tab-preview-btn" data-tab="preview" style="display: none;">
+                <i class="fa-solid fa-eye"></i> Preview
+              </button>
+            </div>
+            <div class="metrics" id="run-metrics">
+              <span class="metric-item"><i class="fa-solid fa-clock"></i> Run: <span id="metric-exec-time">-</span></span>
+              <span class="metric-item"><i class="fa-solid fa-download"></i> Boot: <span id="metric-boot-time">-</span></span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <!-- Console Tab -->
+            <div class="tab-content active" id="tab-terminal">
+              <div class="terminal" id="terminal-stdout">
+                <div class="terminal-line system-msg">Welcome to WASM IDE! Select a language on the left and click "Run Code" to execute.</div>
+              </div>
+            </div>
+            <!-- Database Explorer Tab -->
+            <div class="tab-content" id="tab-database">
+              <div class="db-explorer">
+                <div class="db-sidebar">
+                  <h4><i class="fa-solid fa-table-list"></i> Database Tables</h4>
+                  <ul id="db-tables-list" class="db-tables-list">
+                    <li class="empty-msg">No tables found. Create a table in SQL and run query to inspect.</li>
+                  </ul>
+                </div>
+                <div class="db-results-container">
+                  <h4><i class="fa-solid fa-table-cells"></i> Active Query Output</h4>
+                  <div class="db-results-table-wrapper" id="db-results-wrapper">
+                    <div class="empty-msg">Run a SELECT query to see rows here.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Preview Tab -->
+            <div class="tab-content" id="tab-preview">
+              <iframe id="html-preview-frame" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Share Link Modal -->
+  <div class="modal-overlay" id="share-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-link"></i> Share Your Code</h3>
+        <button class="modal-close" id="share-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Copy the link below to share your sandbox state (code and language) with others:</p>
+        <div class="share-input-group">
+          <input type="text" id="share-url" readonly>
+          <button id="btn-copy-url" class="btn btn-primary"><i class="fa-solid fa-copy"></i> Copy</button>
+        </div>
+        <div class="copy-success-msg" id="copy-success-msg">Copied successfully!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
